@@ -1,0 +1,62 @@
+#include <RCSwitch.h>
+
+RCSwitch mySwitch = RCSwitch();
+
+const int recvPin = D2;    // RF Receiver Data
+const int sendPin = D1;    // RF Transmitter Data
+const int btnRecord = D5;  // Record Button
+const int btnSend = D6;    // Send Button
+
+unsigned long savedCode = 0;
+unsigned int pulseLength = 0;
+unsigned int protocol = 0;
+
+void setup() {
+  Serial.begin(9600);
+  
+  // Set button pins as input with internal pull-up resistors
+  pinMode(btnRecord, INPUT_PULLUP);
+  pinMode(btnSend, INPUT_PULLUP);
+
+  mySwitch.enableReceive(digitalPinToInterrupt(recvPin));  // Enable receiver
+  mySwitch.enableTransmit(sendPin);                        // Setup transmitter
+}
+
+void loop() {
+  // Record Button Pressed
+  if (digitalRead(btnRecord) == LOW) {  // Change to LOW for active button press
+    Serial.println("Listening for RF signal...");
+    while (digitalRead(btnRecord) == LOW);  // Wait for button release
+
+    while (true) {
+      if (mySwitch.available()) {
+        savedCode = mySwitch.getReceivedValue();
+        pulseLength = mySwitch.getReceivedDelay();
+        protocol = mySwitch.getReceivedProtocol();
+
+        Serial.print("Received: ");
+        Serial.print(savedCode);
+        Serial.print(" PulseLength: ");
+        Serial.print(pulseLength);
+        Serial.print(" Protocol: ");
+        Serial.println(protocol);
+
+        mySwitch.resetAvailable();
+        break;
+      }
+      else{
+       Serial.print(" -----------------: ");}
+    }
+  }
+
+  // Send Button Pressed
+  if (digitalRead(btnSend) == LOW && savedCode != 0) {  // Change to LOW for active button press
+    Serial.print("Sending code: ");
+    Serial.println(savedCode);
+
+    mySwitch.setProtocol(protocol);
+    mySwitch.setPulseLength(pulseLength);
+    mySwitch.send(savedCode, 24);  // Most RF codes are 24 bits
+    delay(1000);
+  }
+}
