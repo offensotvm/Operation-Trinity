@@ -1,0 +1,131 @@
+#include "Keyboard.h"
+
+void setup() {
+  // Initialize keyboard functionality
+  Keyboard.begin();
+  
+  // Wait for the device to be recognized
+  delay(3000);
+  
+  // Execute the payload
+  executePayload();
+}
+
+void loop() {
+  // Do nothing in loop - payload runs once
+}
+
+void executePayload() {
+  // Open Start Menu
+  Keyboard.press(KEY_LEFT_GUI);  // Windows key
+  delay(100);
+  Keyboard.releaseAll();
+  delay(1000);
+  
+  // Type "edge" to search for Edge browser
+  Keyboard.print("edge");
+  delay(1000);
+  
+  // Press Enter to open Edge
+  Keyboard.press(KEY_RETURN);
+  delay(100);
+  Keyboard.releaseAll();
+  delay(4000);  // Wait for Edge to load
+  
+  // Navigate to the first website
+  // Ctrl+L to focus address bar
+  Keyboard.press(KEY_LEFT_CTRL);
+  Keyboard.press('l');
+  delay(100);
+  Keyboard.releaseAll();
+  delay(500);
+  
+  // Type the first URL
+  Keyboard.print("https://pranx.com/hacker/");
+  delay(500);
+  
+  // Press Enter to navigate
+  Keyboard.press(KEY_RETURN);
+  delay(100);
+  Keyboard.releaseAll();
+  delay(1500);  // Minimal wait for page to start loading
+  
+  // Toggle F11 for fullscreen immediately
+  Keyboard.press(KEY_F11);
+  delay(50);
+  Keyboard.releaseAll();
+  delay(100);
+  
+  // Stay on the page for 30 seconds
+  delay(30000);
+  
+  // Navigate to the second website
+  // Ctrl+L to focus address bar
+  Keyboard.press(KEY_LEFT_CTRL);
+  Keyboard.press('l');
+  delay(100);
+  Keyboard.releaseAll();
+  delay(500);
+  
+  // Type the second URL
+  Keyboard.print("https://offensoacademy.com/");
+  delay(500);
+  
+  // Press Enter to navigate
+  Keyboard.press(KEY_RETURN);
+  delay(100);
+  Keyboard.releaseAll();
+}
+
+// Alternative function with different timing (uncomment to use)
+/*
+void executePayloadSlow() {
+  // Slower version for older systems
+  
+  Keyboard.press(KEY_LEFT_GUI);
+  delay(200);
+  Keyboard.releaseAll();
+  delay(2000);
+  
+  Keyboard.print("edge");
+  delay(2000);
+  
+  Keyboard.press(KEY_RETURN);
+  delay(200);
+  Keyboard.releaseAll();
+  delay(6000);
+  
+  Keyboard.press(KEY_LEFT_CTRL);
+  Keyboard.press('l');
+  delay(200);
+  Keyboard.releaseAll();
+  delay(1000);
+  
+  Keyboard.print("https://pranx.com/hacker/");
+  delay(1000);
+  
+  Keyboard.press(KEY_RETURN);
+  delay(200);
+  Keyboard.releaseAll();
+  delay(6000);
+  
+  Keyboard.press(KEY_F11);
+  delay(200);
+  Keyboard.releaseAll();
+  delay(2000);
+  
+  delay(30000);
+  
+  Keyboard.press(KEY_LEFT_CTRL);
+  Keyboard.press('l');
+  delay(200);
+  Keyboard.releaseAll();
+  delay(1000);
+  
+  Keyboard.print("https://offensoacademy.com/");
+  delay(1000);
+  
+  Keyboard.press(KEY_RETURN);
+  delay(200);
+  Keyboard.releaseAll();
+}
