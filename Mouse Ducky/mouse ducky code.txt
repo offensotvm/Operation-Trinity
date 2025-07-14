@@ -68,7 +68,7 @@ void executePayload() {
   delay(500);
   
   // Type the second URL
-  Keyboard.print("https://offensoacademy.com/");
+  Keyboard.print("//Enter the Website Like here");
   delay(500);
   
   // Press Enter to navigate
@@ -122,7 +122,7 @@ void executePayloadSlow() {
   Keyboard.releaseAll();
   delay(1000);
   
-  Keyboard.print("https://offensoacademy.com/");
+  Keyboard.print("//Enter the Website Like here");
   delay(1000);
   
   Keyboard.press(KEY_RETURN);
